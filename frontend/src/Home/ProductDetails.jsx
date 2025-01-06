@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useState } from "react";
-import image from "../assets/img/assets/image.png";
+import image from "../assets/books/1.png";
 
 const ProductDetails = () => {
   const [quantity, setQuantity] = useState(0);

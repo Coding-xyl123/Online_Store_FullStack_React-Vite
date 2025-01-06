@@ -8,6 +8,8 @@ import UpdatePassword from "../Auth/UpdatePassword";
 import ChangePassword from "../Auth/ChangePassword";
 import Login from "../Auth/Login";
 import ProductDetails from "../Home/ProductDetails";
+import TopSelling from "..//TopSelling";
+import Home from "../Home/Home";
 
 const router = createBrowserRouter([
   {
@@ -41,6 +43,14 @@ const router = createBrowserRouter([
       {
         path: "/productDetails",
         element: <ProductDetails />,
+      },
+      {
+        path: "/p",
+        element: <TopSelling />,
+      },
+      {
+        path: "/home",
+        element: <Home />,
       },
     ],
   },
