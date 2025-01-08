@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-duplicate-props */
 /* eslint-disable react/jsx-no-undef */
 /* eslint-disable no-undef */
 /* eslint-disable react/prop-types */
@@ -51,9 +52,27 @@ import { Link } from "react-router-dom";
 
 /* eslint-disable react/prop-types */
 import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { addToCart } from "../redux/features/cart/cartSlice";
 
 const BookCardd = ({ book }) => {
   const [quantity, setQuantity] = useState(0);
+  const dispatch = useDispatch();
+
+  const handleAddToCart = () => {
+    const itemQuantity = quantity > 0 ? quantity : 1; // Use the quantity or set default to 1
+
+    // Dispatch to Redux store
+    dispatch(
+      addToCart({
+        product: book, // Assuming book contains all necessary product info
+        quantity: itemQuantity,
+      })
+    );
+
+    // Update the local quantity state only if it was initially 0
+    if (quantity === 0) setQuantity(1);
+  };
 
   const handleAddClick = () => {
     setQuantity(1);
@@ -61,13 +80,31 @@ const BookCardd = ({ book }) => {
 
   const handleIncrement = () => {
     setQuantity((prevQuantity) => prevQuantity + 1);
+    dispatch(
+      addToCart({
+        product: book,
+        quantity: 1, // Add 1 item when incrementing
+      })
+    );
   };
 
   const handleDecrement = () => {
     if (quantity > 1) {
       setQuantity((prevQuantity) => prevQuantity - 1);
+      dispatch(
+        addToCart({
+          product: book,
+          quantity: -1, // Remove 1 item when decrementing
+        })
+      );
     } else {
       setQuantity(0);
+      dispatch(
+        addToCart({
+          product: book,
+          quantity: -1, // Remove the last item from the cart
+        })
+      );
     }
   };
 
@@ -106,7 +143,7 @@ const BookCardd = ({ book }) => {
       <div className="mt-4 flex justify-between gap-2">
         {quantity === 0 ? (
           <button
-            onClick={handleAddClick}
+            onClick={handleAddToCart}
             className="flex-1 bg-blue-500 text-white text-sm py-2 rounded-md hover:bg-blue-600 transition"
           >
             Add
@@ -121,7 +158,9 @@ const BookCardd = ({ book }) => {
             </button>
             <span className="px-4 font-medium">{quantity}</span>
             <button
-              onClick={handleIncrement}
+              onClick={() => {
+                handleIncrement();
+              }}
               className="bg-gray-200 text-black px-3 py-1 rounded-r hover:bg-gray-300"
             >
               +
@@ -129,6 +168,7 @@ const BookCardd = ({ book }) => {
           </div>
         )}
         <button
+          onClick={() => handleAddToCart(book)}
           className="flex-1  bg-white text-black border border-gray-500 text-sm py-1 rounded-md hover:bg-white transition"
           aria-label={`Edit ${book.title}`}
         >

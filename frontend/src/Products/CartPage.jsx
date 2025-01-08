@@ -1,13 +1,12 @@
-/* eslint-disable react/jsx-no-undef */
-/* eslint-disable react/jsx-key */
-/* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
+import { useSelector } from "react-redux";
+
 import React, { useState, useEffect } from "react";
 import BookCardd from "../Products/BookCardd";
 
 const categories = ["last added", "price: low to high", "price: high to low"];
 
-const TopSellingg = () => {
+const CartPage = () => {
   const [books, setBooks] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("last added");
   const [currentPage, setCurrentPage] = useState(1);
@@ -130,4 +129,4 @@ const TopSellingg = () => {
   );
 };
 
-export default TopSellingg;
+export default CartPage;
