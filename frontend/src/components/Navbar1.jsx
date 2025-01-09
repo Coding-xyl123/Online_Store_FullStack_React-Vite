@@ -7,8 +7,12 @@ import { IoCartOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useSelector } from "react-redux";
+import getImgUrl from "../utils/getImgUrl";
+import { useDispatch } from "react-redux";
+import { updateQuantity, removeItem } from "../redux/features/cart/cartSlice";
 
 const Navbar = () => {
+  const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cart.cartItems);
 
   const [discount, setDiscount] = useState(0);
@@ -90,120 +94,170 @@ const Navbar = () => {
 
       {/* Sidebar / Cart Overlay */}
       {isCartOpen && (
-        <div className="fixed top-0 right-0 w-[400px] h-full bg-white shadow-lg z-50 flex flex-col">
-          {/* Header Section */}
-          <div className="p-6 border-b bg-gray-100 flex justify-between items-center">
-            <h2 className="text-xl font-semibold">Cart ({cartItems.length})</h2>
-            <button
-              onClick={toggleCart}
-              className="text-2xl font-bold text-gray-600"
-            >
-              &times;
-            </button>
-          </div>
+        <>
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            onClick={toggleCart}
+          ></div>
 
-          {/* Cart Items */}
-          <div className="p-6 flex-grow overflow-y-auto">
-            {cartItems.length > 0 ? (
-              cartItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-4 mb-6 border-b pb-4"
-                >
+          <div className="fixed top-0 right-0 w-full md:w-[400px] h-screen md:h-5/6 bg-white shadow-xl z-50 flex flex-col text-black">
+            {/* Header Section */}
+            <div className="p-4 bg-blue-600 text-white flex justify-between items-center">
+              <h2 className="text-xl">Cart ({totalItems})</h2>
+              <button
+                onClick={toggleCart}
+                className="text-2xl text-white hover:text-gray-200"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Cart Items */}
+            {/* Cart Items */}
+            <div className="flex-1 overflow-y-auto p-4">
+              {cartItems.map((item) => (
+                <div key={item.id} className="flex items-center gap-4 p-0 mb-4">
+                  {/* Image */}
                   <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-16 h-16 object-cover rounded"
+                    src={getImgUrl(item.coverImage)}
+                    alt={item.title}
+                    className="w-20 h-20 object-cover rounded-md shadow-sm"
                   />
+
+                  {/* Item Details */}
                   <div className="flex-1">
-                    <h3 className="font-medium">{item.name}</h3>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-blue-600 font-semibold">
+                    <div className="flex justify-between items-start">
+                      <h3 className="text-sm font-medium text-gray-800">
+                        {item.title}
+                      </h3>
+                      <span className="text-lg text-blue-600 font-bold border: border-gray-300">
                         ${item.newPrice.toFixed(2)}
                       </span>
-                      <span className="text-sm text-gray-600">
-                        x {item.quantity}
-                      </span>
+                    </div>
+
+                    {/* Quantity Controls and Remove Button */}
+                    <div className="mt-2 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() =>
+                            dispatch(
+                              updateQuantity({
+                                id: item._id,
+                                newQuantity: item.quantity - 1,
+                              })
+                            )
+                          }
+                          className="w-8 h-8 flex items-center justify-center border border-gray-300 text-gray-700 hover:bg-gray-200"
+                        >
+                          −
+                        </button>
+                        <span className=" px-3 py-1 border border-gray-300 text-gray-700 text-sm font-medium">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() =>
+                            dispatch(
+                              updateQuantity({
+                                id: item._id,
+                                newQuantity: item.quantity + 1,
+                              })
+                            )
+                          }
+                          className="w-8 h-8 flex items-center justify-center border border-gray-300 text-gray-700 hover:bg-gray-200"
+                        >
+                          +
+                        </button>
+                      </div>
+                      <button
+                        onClick={() => dispatch(removeItem(item._id))}
+                        className="h-8 px-3 flex items-center text-sm font-normal underline hover:bg-gray-200"
+                      >
+                        Remove
+                      </button>
                     </div>
                   </div>
                 </div>
-              ))
-            ) : (
-              <p className="text-gray-600 text-center">Your cart is empty.</p>
-            )}
-          </div>
+              ))}
+            </div>
 
-          {/* Discount Section */}
-          <div className="p-6 border-t">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={discountCode}
-                onChange={(e) => setDiscountCode(e.target.value)}
-                placeholder="Enter Discount Code"
-                className="flex-1 border p-2 rounded"
-              />
-              <button
-                onClick={applyDiscount}
-                className="bg-blue-600 text-white px-4 py-2 rounded"
-              >
-                Apply
+            {/* Discount Code */}
+            <div className="p-4 border-t">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={discountCode}
+                  onChange={(e) => setDiscountCode(e.target.value)}
+                  placeholder="20 DOLLAR OFF"
+                  className="flex-1 border rounded px-3 py-2"
+                />
+                <button
+                  onClick={applyDiscount}
+                  className="px-4 py-2 bg-blue-600 text-white rounded"
+                >
+                  Apply
+                </button>
+              </div>
+            </div>
+
+            {/* Summary */}
+            <div className="p-4 bg-gray-50 space-y-2">
+              <div className="flex justify-between">
+                <span>Subtotal</span>
+                <span>${subtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Tax</span>
+                <span>${tax}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Discount</span>
+                <span>-${discount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between font-medium pt-2 border-t">
+                <span>Estimated total</span>
+                <span>${estimatedTotal}</span>
+              </div>
+            </div>
+
+            {/* Checkout Button */}
+            <div className="p-4 border-t">
+              <button className="w-full bg-blue-600 text-white py-3 rounded">
+                Continue to checkout
               </button>
             </div>
           </div>
-
-          {/* Subtotal, Tax, Discount, Total */}
-          <div className="p-6 border-t space-y-4">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Subtotal:</span>
-              <span className="font-semibold">${subtotal.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Tax:</span>
-              <span className="font-semibold">${tax}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Discount:</span>
-              <span className="font-semibold">-${discount.toFixed(2)}</span>
-            </div>
-            <hr />
-            <div className="flex justify-between text-lg font-semibold">
-              <span>Total:</span>
-              <span>${estimatedTotal}</span>
-            </div>
-          </div>
-
-          {/* Checkout Button */}
-          <div className="p-6 border-t">
-            <button className="bg-blue-600 text-white w-full py-3 rounded">
-              Continue to Checkout
-            </button>
-          </div>
-        </div>
+        </>
       )}
 
       {/* Mobile Navigation */}
-      <nav className="md:hidden">
-        <div className="flex justify-between items-center p-4">
-          <div className="flex items-center">
+      <nav className="md:hidden bg-[#1B1B1B h-full">
+        <div className="flex justify-between items-center p-4 ">
+          <div className="flex items-center gap-1">
             <span className="text-lg font-bold">M</span>
-            <text className="text-xs">Chuwa</text>
+            <span className="text-xs">Chuwa</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
             <Link to="/login">
               <RiUserStarLine className="text-xl" />
             </Link>
-            <div
-              onClick={toggleCart}
-              className="flex items-center gap-2 cursor-pointer"
-            >
+            <div onClick={toggleCart} className="relative cursor-pointer">
               <IoCartOutline className="text-xl" />
-              {cartItems.length > 0 && (
-                <span className="text-xs font-semibold sm:ml-1">
-                  {cartItems.length}
+              {totalItems > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
+                  {totalItems}
                 </span>
               )}
             </div>
+          </div>
+        </div>
+        <div className="px-4 pb-4">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search"
+              className="w-full py-2 px-3 pr-10 rounded text-black"
+            />
+            <CiSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-xl" />
           </div>
         </div>
       </nav>

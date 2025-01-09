@@ -6,8 +6,6 @@
 // eslint-disable-next-line no-unused-vars
 import React from "react";
 import { FiShoppingCart } from "react-icons/fi";
-import getImgUrl from "../utils/getImgUrl";
-import { Link } from "react-router-dom";
 
 // const BookCardd = ({ book }) => {
 //   return (
@@ -53,14 +51,26 @@ import { Link } from "react-router-dom";
 /* eslint-disable react/prop-types */
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { addToCart } from "../redux/features/cart/cartSlice";
-
+import { addToCart, updateQuantity } from "../redux/features/cart/cartSlice";
+import getImgUrl from "../utils/getImgUrl";
+import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
+import { useEffect } from "react";
 const BookCardd = ({ book }) => {
-  const [quantity, setQuantity] = useState(0);
+  const cartItem = useSelector((state) =>
+    state.cart.cartItems.find((item) => item.id === book._id)
+  );
+  const totalQuantity = useSelector((state) => state.cart.totalQuantity);
+
+  const [quantity, setQuantity] = useState(cartItem?.quantity || 0);
   const dispatch = useDispatch();
+  // Sync local state when Redux changes (e.g., due to sidebar updates, etc.)
+  useEffect(() => {
+    setQuantity(cartItem?.quantity || 0);
+  }, [cartItem]);
 
   const handleAddToCart = () => {
-    const itemQuantity = quantity > 0 ? quantity : 1; // Use the quantity or set default to 1
+    const itemQuantity = quantity > 0 ? 1 : quantity + 1; // Use the quantity or set default to 1
 
     // Dispatch to Redux store
     dispatch(
@@ -86,6 +96,7 @@ const BookCardd = ({ book }) => {
         quantity: 1, // Add 1 item when incrementing
       })
     );
+    setQuantity((prevQuantity) => prevQuantity + 1);
   };
 
   const handleDecrement = () => {
@@ -98,13 +109,13 @@ const BookCardd = ({ book }) => {
         })
       );
     } else {
-      setQuantity(0);
       dispatch(
         addToCart({
           product: book,
           quantity: -1, // Remove the last item from the cart
         })
       );
+      setQuantity(0);
     }
   };
 
