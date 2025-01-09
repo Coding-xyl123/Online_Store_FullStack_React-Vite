@@ -1,7 +1,9 @@
+/* eslint-disable react/jsx-no-undef */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import getImgUrl from "../utils/getImgUrl";
@@ -144,7 +146,7 @@ const ProductDetails = () => {
               </div>
             )}
             <button className="px-6 py-2 border border-gray-300 rounded hover:bg-gray-50">
-              Edit
+              <Link to="/create"> Edit</Link>
             </button>
           </div>
         </div>
