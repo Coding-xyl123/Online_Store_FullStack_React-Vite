@@ -2,14 +2,13 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { addProduct } from "../redux/features/cart/productSlice";
 import axios from "axios";
-import { Link } from "react-router-dom";
 
 const CreateProduct = ({ onProductCreated }) => {
-  axios.defaults.baseURL = " http://localhost:5173/";
+  axios.defaults.baseURL = "http://localhost:5173/";
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [imagePreview, setImagePreview] = useState(null);
@@ -45,6 +44,7 @@ const CreateProduct = ({ onProductCreated }) => {
     setIsSubmitting(true);
     if (!validateForm()) {
       console.log("Form validation failed");
+      setIsSubmitting(false);
       return;
     }
 
@@ -85,7 +85,6 @@ const CreateProduct = ({ onProductCreated }) => {
 
   return (
     <div className="bg-gray-100 h-full ">
-      {/* Increased padding and adjusted size for the white form container */}
       <div className="max-w-3xl mx-auto p-6 sm:p-8">
         <h1 className="text-2xl text-center font-semibold mb-4 sm:mb-6 md:text-left">
           Create Product
@@ -95,7 +94,6 @@ const CreateProduct = ({ onProductCreated }) => {
           onSubmit={handleSubmit}
           className="space-y-6 bg-white p-6 sm:p-8 rounded-md shadow-lg"
         >
-          {/* Product Name */}
           <div className="rounded-md">
             <label className="block text-sm mb-2">Product name</label>
             <input
@@ -113,7 +111,6 @@ const CreateProduct = ({ onProductCreated }) => {
             )}
           </div>
 
-          {/* Product Description */}
           <div>
             <label className="block text-sm mb-2">Product Description</label>
             <textarea
@@ -125,7 +122,6 @@ const CreateProduct = ({ onProductCreated }) => {
             />
           </div>
 
-          {/* Category and Price */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm mb-2">Category</label>
@@ -154,7 +150,6 @@ const CreateProduct = ({ onProductCreated }) => {
             </div>
           </div>
 
-          {/* Stock and Image Upload */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm mb-2">In Stock Quantity</label>
@@ -189,7 +184,6 @@ const CreateProduct = ({ onProductCreated }) => {
             </div>
           </div>
 
-          {/* Image Preview */}
           <div className="border-2 border-dashed border-gray-300 rounded-md p-4 text-center">
             {imagePreview ? (
               <img
@@ -202,7 +196,6 @@ const CreateProduct = ({ onProductCreated }) => {
             )}
           </div>
 
-          {/* Submit Button */}
           <div className="text-center">
             <button
               type="submit"

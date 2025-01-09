@@ -61,7 +61,7 @@ const BookCardd = ({ book }) => {
     state.cart.cartItems.find((item) => item.id === book._id)
   );
   const totalQuantity = useSelector((state) => state.cart.totalQuantity);
-
+  const products = useSelector((state) => state.products.products);
   const [quantity, setQuantity] = useState(cartItem?.quantity || 0);
   const dispatch = useDispatch();
   const ProductList = () => {

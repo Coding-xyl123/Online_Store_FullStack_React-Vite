@@ -42,8 +42,8 @@ const TopSellingg = () => {
     selectedCategory === "last added"
       ? products
       : selectedCategory === "price: low to high"
-      ? [...products].sort((a, b) => a.price - b.price)
-      : [...products].sort((a, b) => b.price - a.price);
+      ? [...products].sort((a, b) => a.newPrice - b.newPrice)
+      : [...products].sort((a, b) => b.newPrice - a.newPrice);
 
   // Paginated Books
   const startIndex = (currentPage - 1) * itemsPerPage;
