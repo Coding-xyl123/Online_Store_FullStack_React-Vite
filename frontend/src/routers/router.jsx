@@ -11,6 +11,8 @@ import ProductDetails from "../Home/ProductDetails";
 import TopSelling from "../Home/TopSelling";
 import Home from "../Home/Home";
 import CartPage1 from "../Products/CartPage";
+import CreateProduct from "../Products/CreateProduct";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 const router = createBrowserRouter([
   {
@@ -41,10 +43,10 @@ const router = createBrowserRouter([
         path: "/changePassword",
         element: <ChangePassword />,
       },
-      {
-        path: "/productDetails",
-        element: <ProductDetails />,
-      },
+      // {
+      //   path: "/productDetails",
+      //   element: <ProductDetails />,
+      // },
       {
         path: "/p",
         element: <TopSelling />,
@@ -56,6 +58,14 @@ const router = createBrowserRouter([
       {
         path: "/cart",
         element: <CartPage1 />,
+      },
+      {
+        path: "/create",
+        element: <CreateProduct />,
+      },
+      {
+        path: "/book/:id",
+        element: <ProductDetails />,
       },
     ],
   },

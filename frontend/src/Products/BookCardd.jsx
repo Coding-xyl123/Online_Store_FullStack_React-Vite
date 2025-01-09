@@ -64,6 +64,9 @@ const BookCardd = ({ book }) => {
 
   const [quantity, setQuantity] = useState(cartItem?.quantity || 0);
   const dispatch = useDispatch();
+  const ProductList = () => {
+    const products = useSelector((state) => state.products.products);
+  };
   // Sync local state when Redux changes (e.g., due to sidebar updates, etc.)
   useEffect(() => {
     setQuantity(cartItem?.quantity || 0);
@@ -179,11 +182,10 @@ const BookCardd = ({ book }) => {
           </div>
         )}
         <button
-          onClick={() => handleAddToCart(book)}
           className="flex-1  bg-white text-black border border-gray-500 text-sm py-1 rounded-md hover:bg-white transition"
           aria-label={`Edit ${book.title}`}
         >
-          Edit
+          <Link to={`/create`}>Edit</Link>
         </button>
       </div>
     </div>
