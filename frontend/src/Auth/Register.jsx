@@ -34,6 +34,9 @@ const Register = () => {
       console.log("Form submitted successfully!");
       // Proceed with form submission or API call
     }
+    const onSubmit = (data) => {
+      console.log(data);
+    };
   };
 
   return (

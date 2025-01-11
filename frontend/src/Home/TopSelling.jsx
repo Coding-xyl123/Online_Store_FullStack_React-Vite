@@ -7,9 +7,9 @@ import { useSelector, useDispatch } from "react-redux";
 import { setProducts } from "../redux/features/cart/productSlice";
 import BookCardd from "../Products/BookCardd";
 import { Link } from "react-router-dom";
-
+import { useFetchAllBookQuery } from "../redux/products/booksApi";
 const categories = ["last added", "price: low to high", "price: high to low"];
-
+import axios from "axios";
 const TopSellingg = () => {
   const dispatch = useDispatch();
   const products = useSelector((state) => state.products.products);
@@ -17,11 +17,14 @@ const TopSellingg = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10; // Two rows of 5 columns
 
+  // const { data: books = [] } = useFetchAllBookQuery;
+  // console.log(books);
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch("/book1.json"); // Adjust API endpoint
-        const data = await response.json();
+        const response = await axios.get("http://localhost:5005/api/books/"); // Adjust API endpoint
+        const data = response.data;
         if (Array.isArray(data)) {
           dispatch(setProducts(data)); // Dispatch only if data is an array
         } else {
@@ -36,7 +39,6 @@ const TopSellingg = () => {
 
     fetchProducts();
   }, [dispatch]);
-
   // Sorting logic
   const sortedBooks =
     selectedCategory === "last added"

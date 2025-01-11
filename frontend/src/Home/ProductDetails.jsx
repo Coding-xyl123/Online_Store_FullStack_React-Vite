@@ -19,15 +19,17 @@ const ProductDetails = () => {
   const book = products.find((product) => product._id.toString() === id);
   const cartItem = cartItems.find((item) => item.id === book?._id);
   const [quantity, setQuantity] = useState(cartItem?.quantity || 0);
+  const [product, setProduct] = useState(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get("/book1.json"); // Adjust API endpoint
-        if (Array.isArray(response.data)) {
-          dispatch(setProducts(response.data)); // Dispatch only if data is an array
+        const response = await axios.get("http://localhost:5005/api/books/");
+        const data = response.data;
+        if (Array.isArray(data)) {
+          dispatch(setProducts(data)); // Dispatch only if data is an array
         } else {
-          console.error("Expected an array but got:", response.data);
+          console.error("Expected an array but got:", data);
           dispatch(setProducts([])); // Ensure state consistency
         }
       } catch (error) {
@@ -38,6 +40,21 @@ const ProductDetails = () => {
 
     fetchProducts();
   }, [dispatch]);
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:5005/api/books/${id}`
+        );
+        setProduct(response.data);
+      } catch (error) {
+        console.error("Failed to fetch product details:", error);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
 
   useEffect(() => {
     console.log("Product ID from URL:", id);
