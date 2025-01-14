@@ -10,14 +10,22 @@ import { useSelector } from "react-redux";
 import getImgUrl from "../utils/getImgUrl";
 import { useDispatch } from "react-redux";
 import { updateQuantity, removeItem } from "../redux/features/cart/cartSlice";
-
+import { useAuth } from "../context/AuthContext";
 const Navbar = () => {
+  const { currentUser, logoutUser } = useAuth();
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cart.cartItems);
 
   const [discount, setDiscount] = useState(0);
   const [discountCode, setDiscountCode] = useState("");
-
+  const handleLogOut = async () => {
+    try {
+      await logoutUser();
+      alert("Logged out successfully");
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
   const totalItems = cartItems.reduce(
     (total, item) => total + item.quantity,
     0
@@ -65,13 +73,30 @@ const Navbar = () => {
           />
         </div>
 
-        <div className="flex items-center gap-6">
+        {/* <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
             <RiUserStarLine className="text-2xl" />
             <div>
               <Link to="/login">
                 <span className="text-sm">Sign In</span>
               </Link>
+            </div>
+          </div> */}
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <RiUserStarLine className="text-2xl" />
+            <div>
+              {currentUser ? (
+                <Link to="/login">
+                  <button onClick={handleLogOut} className="text-sm">
+                    Logout
+                  </button>
+                </Link>
+              ) : (
+                <Link to="/login">
+                  <span className="text-sm">Login</span>
+                </Link>
+              )}
             </div>
           </div>
 

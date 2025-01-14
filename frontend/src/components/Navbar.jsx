@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
 import { CiSearch } from "react-icons/ci";
@@ -7,15 +6,20 @@ import { IoCartOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useSelector } from "react-redux";
-
-const navigation = [
-  { name: "Dashboard", href: "/dashboard" },
-  { name: "Orders", href: "/orders" },
-  { name: "Cart", href: "/cart" },
-  { name: "Checkout", href: "/checkout" },
-];
+import { useAuth } from "../context/AuthContext";
+import { clearScreenDown } from "readline";
 
 const Navbar = ({ setShowCart }) => {
+  const { currentUser, logoutUser } = useAuth();
+  const handleLogOut = async () => {
+    try {
+      await logoutUser();
+
+      alert("Logged fajhkljhfla");
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
   const cartItems = useSelector((state) => state.cart.cartItems);
   const totalItems = cartItems.reduce(
     (total, item) => total + item.quantity,
@@ -32,7 +36,6 @@ const Navbar = ({ setShowCart }) => {
     setIsCartOpen((prevState) => !prevState);
   };
 
-  const currentUser = true;
   return (
     <header className="bg-[#1B1B1B] text-white">
       {/* Desktop Navigation */}
@@ -56,12 +59,12 @@ const Navbar = ({ setShowCart }) => {
             <RiUserStarLine className="text-2xl" />
             <div>
               {currentUser ? (
-                <Link to="/login">
-                  <span className="text-sm">Sign In</span>
-                </Link>
+                <button onClick={handleLogOut} className="text-sm">
+                  <Link to="/login">LogOut</Link>
+                </button>
               ) : (
-                <Link to="/">
-                  <span className="text-sm">Sign Out</span>
+                <Link to="/login">
+                  <span className="text-sm">Login</span>
                 </Link>
               )}
             </div>
@@ -156,16 +159,18 @@ const Navbar = ({ setShowCart }) => {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Tax:</span>
-                <span className="font-semibold">${tax.toFixed(2)}</span>
+                <span className="font-semibold">
+                  ${(totalPrice * 0.1).toFixed(2)}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Discount:</span>
-                <span className="font-semibold">-${discount.toFixed(2)}</span>
+                <span className="font-semibold">-$0.00</span>
               </div>
               <hr />
               <div className="flex justify-between text-lg font-semibold">
                 <span>Total:</span>
-                <span>${estimatedTotal.toFixed(2)}</span>
+                <span>${(totalPrice * 1.1).toFixed(2)}</span>
               </div>
             </div>
 
@@ -187,9 +192,15 @@ const Navbar = ({ setShowCart }) => {
             <text className="text-xs">chuwa</text>
           </div>
           <div className="flex items-center gap-4">
-            <Link to="/login">
-              <RiUserStarLine className="text-xl" />
-            </Link>
+            {currentUser ? (
+              <button onClick={handleLogOut} className="text-sm">
+                Logout
+              </button>
+            ) : (
+              <Link to="/login">
+                <RiUserStarLine className="text-xl" />
+              </Link>
+            )}
             <Link to="/cart" className="flex items-center gap-2">
               <button
                 onClick={() => setShowCart(true)}

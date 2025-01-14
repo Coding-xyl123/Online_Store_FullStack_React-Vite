@@ -13,6 +13,16 @@ import Home from "../Home/Home";
 import CartPage1 from "../Products/CartPage";
 import CreateProduct from "../Products/CreateProduct";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import PrivateRoute from "../routers/PrivateRoute";
+import Product from "../Home/Product";
+import AdminRoute from "./AdminRoute";
+import { Outlet } from "react-router-dom";
+import { Navigate } from "react-router-dom";
+import AdminLogin from "../components/AdminLogin";
+import User from "../Home/User";
+import ProductDetail1 from "../Home/ProductDetails1";
+import RegisterAdmin from "../Auth/RegisterAdmin";
+import ForgotPassword from "../Error/ForgetPassword";
 
 const router = createBrowserRouter([
   {
@@ -36,6 +46,10 @@ const router = createBrowserRouter([
         element: <Register />,
       },
       {
+        path: "/user",
+        element: <User />,
+      },
+      {
         path: "/updatePassword",
         element: <UpdatePassword />,
       },
@@ -43,21 +57,33 @@ const router = createBrowserRouter([
         path: "/changePassword",
         element: <ChangePassword />,
       },
-      // {
-      //   path: "/productDetails",
-      //   element: <ProductDetails />,
-      // },
+      {
+        path: "/admin",
+        element: <AdminLogin />,
+      },
+      {
+        path: "/adminSignUp",
+        element: <RegisterAdmin />,
+      },
       {
         path: "/p",
         element: <TopSelling />,
+      },
+      {
+        path: "/product",
+        element: (
+          <PrivateRoute>
+            <Product />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/home",
         element: <Home />,
       },
       {
-        path: "/cart",
-        element: <CartPage1 />,
+        path: "/forget",
+        element: <ForgotPassword />,
       },
       {
         path: "/create",
@@ -66,6 +92,52 @@ const router = createBrowserRouter([
       {
         path: "/book/:id",
         element: <ProductDetails />,
+      },
+      {
+        path: "/book/:id/p",
+        element: <ProductDetail1 />,
+      },
+      {
+        path: "/p",
+        element: (
+          <AdminRoute>
+            <TopSelling />,
+          </AdminRoute>
+        ),
+        children: [
+          {
+            path: "",
+            element: (
+              <AdminRoute>
+                <div>Admin Dash</div>
+              </AdminRoute>
+            ),
+          },
+          {
+            path: "add-new-book",
+            element: (
+              <AdminRoute>
+                <div>Admin Dashboard</div>
+              </AdminRoute>
+            ),
+          },
+          {
+            path: "edit-book/:id",
+            element: (
+              <AdminRoute>
+                <div>Admin Dasard</div>
+              </AdminRoute>
+            ),
+          },
+          {
+            path: "manage-books",
+            element: (
+              <AdminRoute>
+                <div>Admin</div>
+              </AdminRoute>
+            ),
+          },
+        ],
       },
     ],
   },

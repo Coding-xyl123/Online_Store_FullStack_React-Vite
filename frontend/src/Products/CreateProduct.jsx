@@ -1,14 +1,16 @@
+/* eslint-disable no-undef */
+/* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable react/jsx-no-undef */
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { addProduct } from "../redux/features/cart/productSlice";
 import axios from "axios";
 
 const CreateProduct = ({ onProductCreated }) => {
-  axios.defaults.baseURL = "http://localhost:5173/";
+  axios.defaults.baseURL = "http://localhost:5005/";
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [imagePreview, setImagePreview] = useState(null);
@@ -22,6 +24,19 @@ const CreateProduct = ({ onProductCreated }) => {
     imageUrl: "",
   });
   const [errors, setErrors] = useState({});
+  const [imageFile, setImageFile] = useState(null);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -48,21 +63,28 @@ const CreateProduct = ({ onProductCreated }) => {
       return;
     }
 
-    const newProduct = {
-      id: Date.now(),
-      ...formData,
-      createdAt: new Date().toISOString(),
-    };
-
     try {
       console.log("Attempting to create product...");
+      const formDataToSend = new FormData();
+      formDataToSend.append("name", formData.name);
+      formDataToSend.append("description", formData.description);
+      formDataToSend.append("category", formData.category);
+      formDataToSend.append("price", formData.price);
+      formDataToSend.append("stock", formData.stock);
+      formDataToSend.append("image", imageFile);
+
       const response = await axios.post(
-        "/Users/xiangyangliu/Desktop/untitled folder/frontend/public/book1.json",
-        newProduct
+        "/api/books/create-books",
+        formDataToSend,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
       console.log("Product created successfully:", response.data);
 
-      dispatch(addProduct(newProduct));
+      dispatch(addProduct(response.data));
       console.log("Product added to Redux store");
 
       navigate("/p", { replace: true });
@@ -76,6 +98,8 @@ const CreateProduct = ({ onProductCreated }) => {
         stock: "",
         imageUrl: "",
       });
+      setImagePreview(null);
+      setImageFile(null);
     } catch (error) {
       console.error("Error creating product:", error);
     } finally {
@@ -166,20 +190,11 @@ const CreateProduct = ({ onProductCreated }) => {
               <label className="block text-sm mb-2">Add Image Link</label>
               <div className="flex relative">
                 <input
-                  type="text"
-                  name="imageUrl"
-                  value={formData.imageUrl}
-                  onChange={handleInputChange}
+                  type="file"
+                  name="image"
+                  onChange={handleFileChange}
                   className="flex-1 border rounded-md p-2"
-                  placeholder="http://"
                 />
-                <button
-                  type="button"
-                  onClick={() => setImagePreview(formData.imageUrl)}
-                  className="absolute right-0 top-0 bottom-0 bg-indigo-600 text-white px-4 py-2 rounded-r-md"
-                >
-                  Upload
-                </button>
               </div>
             </div>
           </div>
@@ -202,7 +217,7 @@ const CreateProduct = ({ onProductCreated }) => {
               className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition-colors w-full sm:w-auto text-left"
               style={{ margin: "0 auto 0 0", display: "block" }}
             >
-              <Link to="/p">Add Product</Link>
+              Add Product
             </button>
           </div>
         </form>

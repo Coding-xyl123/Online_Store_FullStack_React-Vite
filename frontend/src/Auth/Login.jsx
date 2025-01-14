@@ -1,8 +1,32 @@
+/* eslint-disable react/jsx-no-undef */
+/* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { Link } from "react-router-dom";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const { loginUser } = useAuth();
+  const navigate = useNavigate();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+
+  const onSubmit = async (data) => {
+    try {
+      await loginUser(data.email, data.password);
+      alert("Logged in successfully");
+      navigate("/user");
+    } catch (error) {
+      console.error("Error logging in:", error);
+      alert("Failed to login");
+    }
+  };
 
   return (
     <div className="h-screen flex items-center justify-center bg-gray-100">
@@ -14,7 +38,7 @@ const Login = () => {
         </h2>
 
         {/* Form */}
-        <form>
+        <form onSubmit={handleSubmit(onSubmit)}>
           {/* Email Field */}
           <div className="mb-4">
             <label
@@ -27,8 +51,12 @@ const Login = () => {
               id="email"
               type="email"
               placeholder="you@example.com"
+              {...register("email", { required: true })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             />
+            {errors.email && (
+              <p className="text-sm text-red-500">Email is required</p>
+            )}
           </div>
 
           {/* Password Field */}
@@ -44,8 +72,12 @@ const Login = () => {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
+                {...register("password", { required: true })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
+              {errors.password && (
+                <p className="text-sm text-red-500">Password is required</p>
+              )}
               {/* Toggle Password Visibility */}
               <span
                 onClick={() => setShowPassword(!showPassword)}
@@ -69,13 +101,13 @@ const Login = () => {
         <div className="mt-6 flex flex-col items-center sm:flex-row sm:justify-between text-sm">
           <p className="text-gray-400 mb-4 sm:mb-0">
             Don’t have an account?{" "}
-            <a href="/register" className="text-indigo-600 underline">
+            <Link to="/signup" className="text-indigo-600 underline">
               Sign up
-            </a>
+            </Link>
           </p>
-          <a href="/forgot-password" className="text-indigo-600 underline">
+          <Link to="/forget" className="text-indigo-600 underline">
             Forgot password?
-          </a>
+          </Link>
         </div>
       </div>
     </div>

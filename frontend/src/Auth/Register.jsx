@@ -1,25 +1,34 @@
+/* eslint-disable no-undef */
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-unused-vars */
 import React, { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { Link } from "react-router-dom";
+import { useForm } from "react-hook-form";
 
 const Register = () => {
-  const [email, setEmail] = useState(""); // State for email
+  const [username, setUsername] = useState(""); // State for username
   const [password, setPassword] = useState(""); // State for password
-  const [emailError, setEmailError] = useState(""); // Email error state
+  const [usernameError, setUsernameError] = useState(""); // Username error state
   const [passwordError, setPasswordError] = useState(""); // Password error state
   const [showPassword, setShowPassword] = useState(false);
+  const [message, setMessage] = useState("");
+  const { registerUser } = useAuth();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
 
-  const validateForm = (e) => {
-    e.preventDefault(); // Prevent form submission
-
+  const validateForm = () => {
     let isValid = true;
 
-    // Validate email
-    if (!email || !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
-      setEmailError("Invalid Email input!");
+    // Validate username
+    if (!username || !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(username)) {
+      setUsernameError("Invalid Email input!");
       isValid = false;
     } else {
-      setEmailError(""); // Clear the error if valid
+      setUsernameError(""); // Clear the error if valid
     }
 
     // Validate password (at least 6 characters)
@@ -30,13 +39,19 @@ const Register = () => {
       setPasswordError(""); // Clear the error if valid
     }
 
-    if (isValid) {
-      console.log("Form submitted successfully!");
-      // Proceed with form submission or API call
+    return isValid;
+  };
+
+  const onSubmit = async (data) => {
+    if (validateForm()) {
+      try {
+        await registerUser(username, password);
+        alert("Account created successfully");
+      } catch (error) {
+        setMessage("Failed to create an account");
+        console.error("Error creating account:", error);
+      }
     }
-    const onSubmit = (data) => {
-      console.log(data);
-    };
   };
 
   return (
@@ -54,33 +69,34 @@ const Register = () => {
         </h2>
 
         {/* Form */}
-        <form onSubmit={validateForm}>
-          {/* Email Field */}
+        <form onSubmit={handleSubmit(onSubmit)}>
+          {/* Username Field */}
           <div className="mb-6">
             <label
-              htmlFor="email"
+              htmlFor="username"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Email
+              Username
             </label>
             <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={`w-full px-3  py-2 border rounded-md text-gray-900 focus:outline-none focus:ring-1 ${
-                emailError
-                  ? "border-red-500 focus:ring-red-500  "
-                  : "focus:ring-red-500 "
+              id="username"
+              type="text"
+              {...register("username", { required: true })}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className={`w-full px-3 py-2 border rounded-md text-gray-900 focus:outline-none focus:ring-1 ${
+                usernameError
+                  ? "border-red-500 focus:ring-red-500"
+                  : "focus:ring-indigo-500"
               }`}
             />
-            {emailError && (
-              <p className="text-sm text-red-500 ml-64 ">{emailError}</p>
+            {usernameError && (
+              <p className="text-sm text-red-500 ml-64">{usernameError}</p>
             )}
           </div>
 
           {/* Password Field */}
-          <div className="mb-6 ">
+          <div className="mb-6">
             <label
               htmlFor="password"
               className="block text-sm font-medium text-gray-700 mb-1"
@@ -91,12 +107,13 @@ const Register = () => {
               <input
                 id="password"
                 type={showPassword ? "text" : "password"}
+                {...register("password", { required: true })}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className={`w-full px-3 py-2  border rounded-md text-gray-900 focus:outline-none focus:ring-1 ${
+                className={`w-full px-3 py-2 border rounded-md text-gray-900 focus:outline-none focus:ring-1 ${
                   passwordError
                     ? "border-red-500 focus:ring-red-500"
-                    : "focus:ring-red-500"
+                    : "focus:ring-indigo-500"
                 }`}
               />
               {passwordError && (
@@ -117,9 +134,9 @@ const Register = () => {
         {/* Bottom Link */}
         <div className="mt-4 text-center text-sm">
           <span className="text-gray-500">Already have an account? </span>
-          <a href="/login" className="text-indigo-600 underline">
+          <Link to="/login" className="text-indigo-600 underline">
             Sign in
-          </a>
+          </Link>
         </div>
       </div>
     </div>

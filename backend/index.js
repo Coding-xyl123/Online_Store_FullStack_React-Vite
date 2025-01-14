@@ -1,9 +1,11 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const port = process.env.PORT || 5005;
 const mongoose = require("mongoose");
 require("dotenv").config();
+
+const port = process.env.PORT || 5005;
+
 app.use(express.json());
 app.use(
   cors({
@@ -12,29 +14,27 @@ app.use(
   })
 );
 
-//UrhZUnbx73A3Rqro
 const bookRoutes = require("./src/products/book.route");
+const userRoute = require("./src/users/user.route");
+
 app.use("/api/books", bookRoutes);
+app.use("/api/auth", userRoute);
+
 async function main() {
-  await mongoose.connect(process.env.DB_URL);
-  app.use("/", (req, res) => {
-    res.send("Server is running");
-  });
-  // use `await mongoose.connect('mongodb://user:password@127.0.0.1:27017/test');` if your database has auth enabled
+  try {
+    await mongoose.connect(process.env.DB_URL);
+    console.log("MongoDB connected successfully");
+
+    app.use("/", (req, res) => {
+      res.send("Server is running");
+    });
+
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    });
+  } catch (err) {
+    console.error("Error connecting to MongoDB", err);
+  }
 }
 
-app.get("/api/books", async (req, res) => {
-  try {
-    const books = await Book.find();
-    res.json(books);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to fetch books", error });
-  }
-});
-main()
-  .then(() => console.log("Mongo connect successfully"))
-  .catch((err) => console.log(err));
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-});
-main().catch((err) => console.log(err));
+main();
