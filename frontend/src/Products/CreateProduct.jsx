@@ -59,128 +59,126 @@ const CreateProduct = ({ onProductCreated }) => {
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen flex items-center justify-center">
-      <div className="max-w-3xl w-full p-6 sm:p-8 bg-white rounded-md shadow-lg">
-        <h1 className="text-3xl font-semibold mb-6 text-center">
+    <div className="bg-gray-100 h-full">
+      <div className="max-w-3xl mx-auto p-6 sm:p-8">
+        <h1 className="text-2xl text-center font-semibold mb-4 sm:mb-6 md:text-left">
           Create Product
         </h1>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Product Name
-            </label>
-            <InputField
-              label="Title"
-              name="title"
-              placeholder="Enter book title"
-              register={register}
-            />
-            {errors.name && (
-              <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Product Description
-            </label>
-            <InputField
-              label="Description"
-              name="description"
-              placeholder="Enter book description"
-              type="textarea"
-              register={register}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Category</label>
-              <SelectField
-                label="Category"
-                name="category"
-                options={[
-                  { value: "", label: "Choose A Category" },
-                  { value: "business", label: "Business" },
-                  { value: "technology", label: "Technology" },
-                  { value: "fiction", label: "Fiction" },
-                  { value: "horror", label: "Horror" },
-                  { value: "adventure", label: "Adventure" },
-                ]}
-                register={register}
-              />
-            </div>
+        <div className="max-w-3xl w-full p-6 sm:p-8 bg-white rounded-md shadow-lg">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div>
               <label className="block text-sm font-medium mb-2">
-                Old Price
+                Product Name
               </label>
               <InputField
-                label="Old Price"
-                name="oldPrice"
-                type="number"
-                placeholder="Old Price"
+                label="Title"
+                name="title"
+                placeholder="Enter book title"
                 register={register}
               />
+              {errors.name && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.name.message}
+                </p>
+              )}
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2">
-                New Price
+                Product Description
               </label>
               <InputField
-                label="New Price"
-                name="newPrice"
-                type="number"
-                placeholder="New Price"
+                label="Description"
+                name="description"
+                placeholder="Enter book description"
+                type="textarea"
                 register={register}
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Add Image Link
-              </label>
-              <div className="flex items-center">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="mb-2 w-full"
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <SelectField
+                  label="Category"
+                  name="category"
+                  options={[
+                    { value: "", label: "Choose A Category" },
+                    { value: "business", label: "Business" },
+                    { value: "technology", label: "Technology" },
+                    { value: "fiction", label: "Fiction" },
+                    { value: "horror", label: "Horror" },
+                    { value: "adventure", label: "Adventure" },
+                  ]}
+                  register={register}
                 />
-                {imageFileName && (
-                  <p className="text-sm text-gray-500 ml-2">{imageFileName}</p>
-                )}
+              </div>
+              <div>
+                <InputField
+                  label="Old Price"
+                  name="oldPrice"
+                  type="number"
+                  placeholder="Old Price"
+                  register={register}
+                />
               </div>
             </div>
-          </div>
 
-          <div className="border-2 border-dashed border-gray-300 rounded-md p-4 text-center">
-            {imagePreview ? (
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className="max-h-48 w-full object-cover mx-auto"
-              />
-            ) : (
-              <div className="text-gray-400">Image preview</div>
-            )}
-          </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <InputField
+                  label="New Price"
+                  name="newPrice"
+                  type="number"
+                  placeholder="New Price"
+                  register={register}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Add Image Link
+                </label>
+                <div className="flex items-center">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="mb-2 w-full"
+                  />
+                  {imageFileName && (
+                    <p className="text-sm text-gray-500 ml-2">
+                      {imageFileName}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
 
-          <div className="">
-            <button
-              type="submit"
-              className="px-9 py-2 right-0 bg-blue-500 text-white font-bold rounded-md"
-            >
-              {isLoading ? (
-                <span className="">Adding.. </span>
+            <div className="border-2 border-dashed border-gray-300 rounded-md p-4 text-center">
+              {imagePreview ? (
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="max-h-48 w-full object-cover mx-auto"
+                />
               ) : (
-                <span>Add Book</span>
+                <div className="text-gray-400">Image preview</div>
               )}
-            </button>
-          </div>
-        </form>
+            </div>
+
+            <div className="">
+              <button
+                type="submit"
+                className="px-9 py-2 right-0 bg-blue-500 text-white font-bold rounded-md"
+              >
+                {isLoading ? (
+                  <span className="">Adding.. </span>
+                ) : (
+                  <span>Add Book</span>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

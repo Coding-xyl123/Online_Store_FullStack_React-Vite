@@ -117,7 +117,7 @@ const BookCardd = ({ book }) => {
           className="flex-1 bg-white text-black border border-gray-500 text-sm py-1 rounded-md hover:bg-white transition"
           aria-label={`Edit ${book.title}`}
         >
-          <Link to={`/create`}>Edit</Link>
+          <Link to={`/d/edit-book/${book._id}`}>Edit</Link>
         </button>
       </div>
     </div>

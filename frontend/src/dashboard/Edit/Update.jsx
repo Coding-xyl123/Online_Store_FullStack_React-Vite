@@ -74,10 +74,10 @@ const UpdateBook = () => {
     }
   };
 
-  if (isError) return <div>Error fetching book data</div>;
+  if (isError) return <div>Error fetching data</div>;
   return (
     <div className="max-w-lg mx-auto md:p-6 p-3 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">Update Book</h2>
+      <h2 className="text-2xl font-bold text-gray-800 mb-4">Update Product</h2>
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <InputField
@@ -149,7 +149,7 @@ const UpdateBook = () => {
           type="submit"
           className="w-full py-2 bg-blue-500 text-white font-bold rounded-md"
         >
-          Update Book
+          Update Product
         </button>
       </form>
     </div>

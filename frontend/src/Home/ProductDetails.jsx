@@ -163,7 +163,7 @@ const ProductDetails = () => {
               </div>
             )}
             <button className="px-6 py-2 border border-gray-300 rounded hover:bg-gray-50">
-              <Link to="/create"> Edit</Link>
+              <Link to={`/d/edit-book/${id}`}> Edit</Link>
             </button>
           </div>
         </div>
