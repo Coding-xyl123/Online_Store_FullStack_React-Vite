@@ -1,35 +1,55 @@
-/* eslint-disable no-undef */
-/* eslint-disable react-hooks/rules-of-hooks */
-/* eslint-disable react/jsx-no-undef */
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { addProduct } from "../redux/features/cart/productSlice";
-import axios from "axios";
+import { useForm } from "react-hook-form";
+import { useAddBookMutation } from "../redux/products/booksApi";
+import Swal from "sweetalert2";
+import InputField from "../dashboard/Add/InputField";
+import SelectField from "../dashboard/Add/SelectField";
 
 const CreateProduct = ({ onProductCreated }) => {
-  axios.defaults.baseURL = "http://localhost:5005/";
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const [imagePreview, setImagePreview] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    category: "",
-    price: "",
-    stock: "",
-    imageUrl: "",
-  });
-  const [errors, setErrors] = useState({});
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm();
   const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [addBook, { isLoading, isError }] = useAddBookMutation();
+  const [imageFileName, setImageFileName] = useState("");
+
+  const onSubmit = async (data) => {
+    const newBookData = {
+      ...data,
+      coverImage: imageFileName,
+    };
+    try {
+      await addBook(newBookData).unwrap();
+      Swal.fire({
+        title: "Product added",
+        text: "Your Product is uploaded successfully!",
+        icon: "success",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, It's Okay!",
+      });
+      reset();
+      setImageFileName("");
+      setImageFile(null);
+      setImagePreview(null);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to add book. Please try again.");
+    }
+  };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setImageFile(file);
+      setImageFileName(file.name);
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
@@ -38,163 +58,100 @@ const CreateProduct = ({ onProductCreated }) => {
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = "Product name is required";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (isSubmitting) return;
-    setIsSubmitting(true);
-    if (!validateForm()) {
-      console.log("Form validation failed");
-      setIsSubmitting(false);
-      return;
-    }
-
-    try {
-      console.log("Attempting to create product...");
-      const formDataToSend = new FormData();
-      formDataToSend.append("name", formData.name);
-      formDataToSend.append("description", formData.description);
-      formDataToSend.append("category", formData.category);
-      formDataToSend.append("price", formData.price);
-      formDataToSend.append("stock", formData.stock);
-      formDataToSend.append("image", imageFile);
-
-      const response = await axios.post(
-        "/api/books/create-books",
-        formDataToSend,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      console.log("Product created successfully:", response.data);
-
-      dispatch(addProduct(response.data));
-      console.log("Product added to Redux store");
-
-      navigate("/p", { replace: true });
-      console.log("Navigation triggered");
-
-      setFormData({
-        name: "",
-        description: "",
-        category: "",
-        price: "",
-        stock: "",
-        imageUrl: "",
-      });
-      setImagePreview(null);
-      setImageFile(null);
-    } catch (error) {
-      console.error("Error creating product:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
-    <div className="bg-gray-100 h-full ">
-      <div className="max-w-3xl mx-auto p-6 sm:p-8">
-        <h1 className="text-2xl text-center font-semibold mb-4 sm:mb-6 md:text-left">
+    <div className="bg-gray-100 min-h-screen flex items-center justify-center">
+      <div className="max-w-3xl w-full p-6 sm:p-8 bg-white rounded-md shadow-lg">
+        <h1 className="text-3xl font-semibold mb-6 text-center">
           Create Product
         </h1>
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-6 bg-white p-6 sm:p-8 rounded-md shadow-lg"
-        >
-          <div className="rounded-md">
-            <label className="block text-sm mb-2">Product name</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              className={`w-full border rounded-md p-2 ${
-                errors.name ? "border-red-500" : ""
-              }`}
-              placeholder="iWatch"
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Product Name
+            </label>
+            <InputField
+              label="Title"
+              name="title"
+              placeholder="Enter book title"
+              register={register}
             />
             {errors.name && (
-              <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+              <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm mb-2">Product Description</label>
-            <textarea
+            <label className="block text-sm font-medium mb-2">
+              Product Description
+            </label>
+            <InputField
+              label="Description"
               name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              className="w-full border rounded-md p-2 h-32"
-              placeholder="Enter product description..."
+              placeholder="Enter book description"
+              type="textarea"
+              register={register}
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm mb-2">Category</label>
-              <select
+              <label className="block text-sm font-medium mb-2">Category</label>
+              <SelectField
+                label="Category"
                 name="category"
-                value={formData.category}
-                onChange={handleInputChange}
-                className="w-full border rounded-md p-2"
-              >
-                <option value="">Select Category</option>
-                <option value="category1">Category1</option>
-                <option value="category2">Category2</option>
-                <option value="category3">Category3</option>
-              </select>
+                options={[
+                  { value: "", label: "Choose A Category" },
+                  { value: "business", label: "Business" },
+                  { value: "technology", label: "Technology" },
+                  { value: "fiction", label: "Fiction" },
+                  { value: "horror", label: "Horror" },
+                  { value: "adventure", label: "Adventure" },
+                ]}
+                register={register}
+              />
             </div>
             <div>
-              <label className="block text-sm mb-2">Price</label>
-              <input
+              <label className="block text-sm font-medium mb-2">
+                Old Price
+              </label>
+              <InputField
+                label="Old Price"
+                name="oldPrice"
                 type="number"
-                name="price"
-                value={formData.price}
-                onChange={handleInputChange}
-                className="w-full border rounded-md p-2"
-                placeholder="50"
+                placeholder="Old Price"
+                register={register}
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm mb-2">In Stock Quantity</label>
-              <input
+              <label className="block text-sm font-medium mb-2">
+                New Price
+              </label>
+              <InputField
+                label="New Price"
+                name="newPrice"
                 type="number"
-                name="stock"
-                value={formData.stock}
-                onChange={handleInputChange}
-                className="w-full border rounded-md p-2"
-                placeholder="100"
+                placeholder="New Price"
+                register={register}
               />
             </div>
             <div>
-              <label className="block text-sm mb-2">Add Image Link</label>
-              <div className="flex relative">
+              <label className="block text-sm font-medium mb-2">
+                Add Image Link
+              </label>
+              <div className="flex items-center">
                 <input
                   type="file"
-                  name="image"
+                  accept="image/*"
                   onChange={handleFileChange}
-                  className="flex-1 border rounded-md p-2"
+                  className="mb-2 w-full"
                 />
+                {imageFileName && (
+                  <p className="text-sm text-gray-500 ml-2">{imageFileName}</p>
+                )}
               </div>
             </div>
           </div>
@@ -211,13 +168,16 @@ const CreateProduct = ({ onProductCreated }) => {
             )}
           </div>
 
-          <div className="text-center">
+          <div className="">
             <button
               type="submit"
-              className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition-colors w-full sm:w-auto text-left"
-              style={{ margin: "0 auto 0 0", display: "block" }}
+              className="px-9 py-2 right-0 bg-blue-500 text-white font-bold rounded-md"
             >
-              Add Product
+              {isLoading ? (
+                <span className="">Adding.. </span>
+              ) : (
+                <span>Add Book</span>
+              )}
             </button>
           </div>
         </form>

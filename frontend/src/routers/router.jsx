@@ -23,6 +23,11 @@ import User from "../Home/User";
 import ProductDetail1 from "../Home/ProductDetails1";
 import RegisterAdmin from "../Auth/RegisterAdmin";
 import ForgotPassword from "../Error/ForgetPassword";
+import Dashboard from "../dashboard/DashboardLayout";
+import DashboardLayout from "../dashboard/DashboardLayout";
+import ManageBook from "../dashboard/Manage/ManageBook";
+import Add from "../dashboard/Add/Add";
+import Update from "../dashboard/Edit/Update";
 
 const router = createBrowserRouter([
   {
@@ -98,10 +103,11 @@ const router = createBrowserRouter([
         element: <ProductDetail1 />,
       },
       {
-        path: "/p",
+        path: "/d",
         element: (
           <AdminRoute>
-            <TopSelling />,
+            {/* <TopSelling />, */}
+            <DashboardLayout />
           </AdminRoute>
         ),
         children: [
@@ -117,7 +123,7 @@ const router = createBrowserRouter([
             path: "add-new-book",
             element: (
               <AdminRoute>
-                <div>Admin Dashboard</div>
+                <CreateProduct />
               </AdminRoute>
             ),
           },
@@ -125,7 +131,7 @@ const router = createBrowserRouter([
             path: "edit-book/:id",
             element: (
               <AdminRoute>
-                <div>Admin Dasard</div>
+                <Add />
               </AdminRoute>
             ),
           },
@@ -133,7 +139,7 @@ const router = createBrowserRouter([
             path: "manage-books",
             element: (
               <AdminRoute>
-                <div>Admin</div>
+                <ManageBook />
               </AdminRoute>
             ),
           },

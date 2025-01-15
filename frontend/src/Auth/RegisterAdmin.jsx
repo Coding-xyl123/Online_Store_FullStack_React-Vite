@@ -2,9 +2,8 @@
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-unused-vars */
 import React, { useState } from "react";
-import { useAuth } from "../context/AuthContext";
-import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
 
 const RegisterAdmin = () => {
   const [username, setUsername] = useState(""); // State for username
@@ -13,7 +12,6 @@ const RegisterAdmin = () => {
   const [passwordError, setPasswordError] = useState(""); // Password error state
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState("");
-  const { registerUser } = useAuth();
   const {
     register,
     handleSubmit,
@@ -45,8 +43,23 @@ const RegisterAdmin = () => {
   const onSubmit = async (data) => {
     if (validateForm()) {
       try {
-        await registerUser(username, password);
-        alert("Account created successfully");
+        const response = await fetch(
+          "http://localhost:5005/api/auth/create-admin",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ username, password }),
+          }
+        );
+
+        if (response.ok) {
+          alert("Admin account created successfully");
+        } else {
+          const errorData = await response.json();
+          setMessage(errorData.message || "Failed to create an account");
+        }
       } catch (error) {
         setMessage("Failed to create an account");
         console.error("Error creating account:", error);

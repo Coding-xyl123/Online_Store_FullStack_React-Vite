@@ -109,6 +109,7 @@
 
 // module.exports = router;
 const express = require("express");
+const bcrypt = require("bcrypt");
 const User = require("./user.model");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
@@ -128,7 +129,8 @@ router.post("/admin", async (req, res) => {
 
     console.log("Admin found:", admin);
 
-    if (password !== admin.password) {
+    const isPasswordValid = await bcrypt.compare(password, admin.password);
+    if (!isPasswordValid) {
       console.log("Password is invalid");
       return res.status(401).send({ message: "Password is invalid" });
     }
@@ -169,10 +171,12 @@ router.post("/register", async (req, res) => {
       return res.status(400).send({ message: "Username already exists" });
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const newUser = new User({
       username,
-      password, // Storing plain text password (not recommended)
-      role,
+      password: hashedPassword,
+      role: "user",
     });
 
     await newUser.save();
@@ -185,9 +189,8 @@ router.post("/register", async (req, res) => {
 });
 
 // Admin creation route
-// Temporary route to create a user
 router.post("/create-admin", async (req, res) => {
-  const { username, password, role } = req.body;
+  const { username, password } = req.body;
 
   try {
     const existingUser = await User.findOne({ username });
@@ -195,17 +198,19 @@ router.post("/create-admin", async (req, res) => {
       return res.status(400).send({ message: "Username already exists" });
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const newUser = new User({
       username,
-      password, // Storing plain text password (not recommended)
-      role,
+      password: hashedPassword,
+      role: "admin",
     });
 
     await newUser.save();
 
-    res.status(201).send({ message: "User created successfully" });
+    res.status(201).send({ message: "Admin created successfully" });
   } catch (error) {
-    console.error("Error in user registration", error);
+    console.error("Error in admin registration", error);
     res.status(500).send({ message: "Server error" });
   }
 });

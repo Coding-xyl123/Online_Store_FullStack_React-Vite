@@ -1,25 +1,31 @@
 const express = require("express");
-const router = require("express").Router();
-const Book = require("./book.model");
-const { getSingleBook, updateBook, deleteABook } = require("./book.controller");
-const { postABook, getAllBooks } = require("./book.controller");
-const verifyAdminToken = require("../middleware/verifyAdminToken.");
-const { validateHeaderName } = require("node:http");
+const router = express.Router();
+const Book = require("./book.model"); // Import the Book model
+const { isCreator } = require("../middleware/verifyAdminToken");
+const {
+  postABook,
+  getAllBooks,
+  getSingleBook,
+  updateBook,
+  deleteABook,
+} = require("./book.controller");
+const { verifyToken, isAdmin } = require("../middleware/verifyAdminToken");
 
-//post a book
-//post = when sumit
-router.post("/create-book", verifyAdminToken, postABook);
+// Post a book
+router.post("/create-book", verifyToken, isAdmin, postABook);
 
-//get all books
+// Get all books
 router.get("/", getAllBooks);
 
-//get a book
+// Get a book
 router.get("/:id", getSingleBook);
 
-//update a book
-router.put("/edit/:id", verifyAdminToken, updateBook);
+// Update a book
+router.put("/edit/:id", verifyToken, isAdmin, isCreator, updateBook);
 
-//delete a book
-router.delete("/delete/:id", validateHeaderName, deleteABook);
+router.put("/update-book/:id", verifyToken, isAdmin, isCreator, updateBook);
+
+// Delete a book
+router.delete("/delete/:id", verifyToken, isAdmin, isCreator, deleteABook);
 
 module.exports = router;

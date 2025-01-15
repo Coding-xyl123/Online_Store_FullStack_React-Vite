@@ -1,24 +1,20 @@
-/* eslint-disable no-undef */
-/* eslint-disable no-unused-vars */
-// eslint-disable-next-line no-unused-vars
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query";
-import getBaseURL from "../../utils/baseURL.JS";
-// Remove redundant imports
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import getBaseURL from "../../utils/baseURL";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: `${getBaseURL()}/api/books`,
   credentials: "include",
-  prepareHeaders: (Headers) => {
+  prepareHeaders: (headers) => {
     const token = localStorage.getItem("token");
     if (token) {
-      Headers.set("authorization", `Bearer ${token}`);
+      headers.set("authorization", `Bearer ${token}`);
     }
-    return Headers;
+    return headers;
   },
 });
 
 const booksApi = createApi({
-  reducerPath: "bookApi",
+  reducerPath: "booksApi",
   baseQuery,
   tagTypes: ["Book"],
   endpoints: (builder) => ({
@@ -28,7 +24,7 @@ const booksApi = createApi({
     }),
     fetchBookById: builder.query({
       query: (id) => `/${id}`,
-      providesTags: (results, error, id) => [{ type: "Book", id }],
+      providesTags: (result, error, id) => [{ type: "Book", id }],
     }),
     addBook: builder.mutation({
       query: (newBook) => ({
@@ -38,7 +34,6 @@ const booksApi = createApi({
       }),
       invalidatesTags: ["Book"],
     }),
-
     updateBook: builder.mutation({
       query: ({ id, ...rest }) => ({
         url: `/edit/${id}`,
@@ -61,10 +56,9 @@ const booksApi = createApi({
 });
 
 export const {
-  useFetchAllBookQuery,
+  useFetchAllBooksQuery,
   useFetchBookByIdQuery,
   useAddBookMutation,
-  useUpdate,
   useUpdateBookMutation,
   useDeleteBookMutation,
 } = booksApi;

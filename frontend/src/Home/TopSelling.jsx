@@ -7,9 +7,10 @@ import { useSelector, useDispatch } from "react-redux";
 import { setProducts } from "../redux/features/cart/productSlice";
 import BookCardd from "../Products/BookCardd";
 import { Link } from "react-router-dom";
-import { useFetchAllBookQuery } from "../redux/products/booksApi";
+import { useFetchAllBooksQuery } from "../redux/products/booksApi";
 const categories = ["last added", "price: low to high", "price: high to low"];
 import axios from "axios";
+
 const TopSellingg = () => {
   const dispatch = useDispatch();
   const products = useSelector((state) => state.products.products);
@@ -17,7 +18,7 @@ const TopSellingg = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10; // Two rows of 5 columns
 
-  // const { data: books = [] } = useFetchAllBookQuery;
+  // const { data: books = [] } = useFetchAllBooksQuery();
   // console.log(books);
 
   useEffect(() => {
@@ -39,6 +40,7 @@ const TopSellingg = () => {
 
     fetchProducts();
   }, [dispatch]);
+
   // Sorting logic
   const sortedBooks =
     selectedCategory === "last added"
