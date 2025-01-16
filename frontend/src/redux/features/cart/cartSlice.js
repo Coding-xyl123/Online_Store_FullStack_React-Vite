@@ -1,3 +1,4 @@
+/* eslint-disable no-dupe-keys */
 /* eslint-disable react/prop-types */
 /* eslint-disable no-undef */
 // import { createSlice } from "@reduxjs/toolkit";
@@ -76,16 +77,16 @@ export const saveCartToDb = createAsyncThunk(
   "cart/saveCartToDb",
   async (_, { getState }) => {
     const state = getState();
-    const { userId, cartItems } = state.cart;
+    const { userId, userRole, cartItems } = state.cart;
 
     // Save to localStorage with user-specific key
-    const cartKey = `cart_${userId}`;
+    const cartKey = `cart_${userRole}_${userId}`;
     localStorage.setItem(cartKey, JSON.stringify(cartItems));
 
     const response = await fetch("/api/cart", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, cartItems }),
+      body: JSON.stringify({ userId, userRole, cartItems }),
     });
     return response.json();
   }
@@ -94,13 +95,13 @@ export const saveCartToDb = createAsyncThunk(
 // Async thunk to load cart data from the database
 export const loadCartFromDb = createAsyncThunk(
   "cart/loadCartFromDb",
-  async (userId) => {
+  async ({ userId, userRole }) => {
     // Try localStorage first
-    const cartKey = `cart_${userId}`;
+    const cartKey = `cart_${userRole}_${userId}`;
     const localCart = localStorage.getItem(cartKey);
 
     // Then try server
-    const response = await fetch(`/api/cart/${userId}`);
+    const response = await fetch(`/api/cart/${userRole}/${userId}`);
     if (!response.ok) {
       // If server fails but we have local data, use that
       if (localCart) {
@@ -121,6 +122,7 @@ export const loadCartFromDb = createAsyncThunk(
     return serverData;
   }
 );
+
 const mergeCartItems = (localItems, serverItems) => {
   const mergedMap = new Map();
 
@@ -141,6 +143,7 @@ const mergeCartItems = (localItems, serverItems) => {
 
 const initialState = {
   userId: null,
+  userRole: null,
   cartItems: [],
   totalQuantity: 0,
   totalPrice: 0,
@@ -157,7 +160,9 @@ const cartSlice = createSlice({
       state.totalPrice = 0;
     },
     setUserId: (state, action) => {
-      state.userId = action.payload;
+      const { userId, userRole } = action.payload || {};
+      state.userId = userId;
+      state.userRole = userRole;
     },
     addToCart: (state, action) => {
       const { product, quantity } = action.payload;
@@ -228,7 +233,7 @@ const cartSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(loadCartFromDb.fulfilled, (state, action) => {
-      state.cartItems = action.payload;
+      state.cartItems = action.payload.cartItems;
       state.totalQuantity = state.cartItems.reduce(
         (sum, item) => sum + item.quantity,
         0

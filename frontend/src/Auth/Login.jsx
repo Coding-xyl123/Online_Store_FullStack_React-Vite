@@ -9,8 +9,11 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setCartItems, setUserId } from "../redux/features/cart/cartSlice";
 
 const Login = () => {
+  const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
   const { loginUser } = useAuth();
   const navigate = useNavigate();
@@ -31,7 +34,24 @@ const Login = () => {
 
       if (response.ok) {
         localStorage.setItem("token", data.token);
-        await loginUser(data.user); // This will trigger re-render
+        await loginUser(data.user);
+
+        // Initialize cart state
+        const cartKey = `cart_${data.user.role}_${data.user._id}`;
+        const savedCart = localStorage.getItem(cartKey);
+
+        // Set user ID first
+        dispatch(setUserId(data.user._id));
+
+        // Initialize empty cart if none exists
+        dispatch(
+          setCartItems({
+            userId: data.user._id,
+            role: data.user.role,
+            items: savedCart ? JSON.parse(savedCart) : [],
+          })
+        );
+
         navigate("/");
       }
     } catch (error) {

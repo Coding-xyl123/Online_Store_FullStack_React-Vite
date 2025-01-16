@@ -1,3 +1,9 @@
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { CiSearch } from "react-icons/ci";
@@ -43,11 +49,11 @@ const Navbar1 = () => {
             dispatch(setCartItems(JSON.parse(savedCartItems)));
           } else {
             // If not in localStorage, load from database
-            await dispatch(loadCartFromDb(userId));
+            await dispatch(loadCartFromDb({ userId, userRole }));
           }
 
-          // Set user ID in Redux store
-          dispatch(setUserId(userId));
+          // Set user ID and role in Redux store
+          dispatch(setUserId({ userId, userRole }));
         } catch (error) {
           console.error("Error loading cart:", error);
         }
@@ -66,7 +72,7 @@ const Navbar1 = () => {
       localStorage.setItem(cartKey, JSON.stringify(cartItems));
 
       // Save to database
-      dispatch(saveCartToDb());
+      dispatch(saveCartToDb({ userId, userRole, cartItems }));
     }
   }, [cartItems, currentUser, dispatch]);
 
@@ -76,7 +82,7 @@ const Navbar1 = () => {
         const userId = currentUser._id;
         const userRole = currentUser.role;
         const cartKey = `cart_${userRole}_${userId}`;
-        dispatch(setUserId(userId));
+        dispatch(setUserId({ userId, userRole }));
         const savedCartItems = localStorage.getItem(cartKey);
         if (savedCartItems) {
           dispatch(setCartItems(JSON.parse(savedCartItems)));
@@ -93,7 +99,11 @@ const Navbar1 = () => {
       localStorage.setItem(cartKey, JSON.stringify(cartItems));
       await logoutUser();
       alert("Logged out successfully");
-      navigate("/login");
+      if (userRole === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/login");
+      }
     } catch (error) {
       console.error("Error logging out:", error);
     }
