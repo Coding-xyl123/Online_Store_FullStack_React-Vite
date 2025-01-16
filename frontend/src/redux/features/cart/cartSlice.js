@@ -75,18 +75,18 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 // Async thunk to save cart data to the database
 export const saveCartToDb = createAsyncThunk(
   "cart/saveCartToDb",
-  async (_, { getState }) => {
-    const state = getState();
-    const { userId, userRole, cartItems } = state.cart;
-
-    // Save to localStorage with user-specific key
+  async ({ userId, userRole, cartItems }) => {
+    // Generate unique cart key per user
     const cartKey = `cart_${userRole}_${userId}`;
     localStorage.setItem(cartKey, JSON.stringify(cartItems));
 
-    const response = await fetch("/api/cart", {
+    const response = await fetch(`/api/cart/${userRole}/${userId}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, userRole, cartItems }),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({ cartItems }),
     });
     return response.json();
   }
@@ -96,14 +96,16 @@ export const saveCartToDb = createAsyncThunk(
 export const loadCartFromDb = createAsyncThunk(
   "cart/loadCartFromDb",
   async ({ userId, userRole }) => {
-    // Try localStorage first
     const cartKey = `cart_${userRole}_${userId}`;
     const localCart = localStorage.getItem(cartKey);
 
-    // Then try server
-    const response = await fetch(`/api/cart/${userRole}/${userId}`);
+    const response = await fetch(`/api/cart/${userRole}/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
     if (!response.ok) {
-      // If server fails but we have local data, use that
       if (localCart) {
         return { cartItems: JSON.parse(localCart) };
       }
@@ -116,6 +118,9 @@ export const loadCartFromDb = createAsyncThunk(
     if (localCart) {
       const localItems = JSON.parse(localCart);
       const mergedItems = mergeCartItems(localItems, serverData.cartItems);
+
+      // Save merged items back to localStorage
+      localStorage.setItem(cartKey, JSON.stringify(mergedItems));
       return { cartItems: mergedItems };
     }
 
@@ -185,9 +190,17 @@ const cartSlice = createSlice({
         (sum, item) => sum + item.newPrice * item.quantity,
         0
       );
+
+      // Save cart to localStorage
+      if (state.userId && state.userRole) {
+        const cartKey = `cart_${state.userRole}_${state.userId}`;
+        localStorage.setItem(cartKey, JSON.stringify(state.cartItems));
+      }
     },
+
     updateQuantity: (state, action) => {
-      const { id, newQuantity } = action.payload;
+      const { id, newQuantity, userId, userRole } = action.payload;
+      if (state.userId !== userId || state.userRole !== userRole) return;
       const existingItem = state.cartItems.find((item) => item.id === id);
 
       if (existingItem) {
@@ -207,7 +220,8 @@ const cartSlice = createSlice({
       );
     },
     removeItem: (state, action) => {
-      const id = action.payload;
+      const { id, userId, userRole } = action.payload;
+      if (state.userId !== userId || state.userRole !== userRole) return;
       state.cartItems = state.cartItems.filter((item) => item.id !== id);
       state.totalQuantity = state.cartItems.reduce(
         (sum, item) => sum + item.quantity,

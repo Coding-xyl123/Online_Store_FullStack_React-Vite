@@ -97,6 +97,7 @@ const Navbar1 = () => {
       const userRole = currentUser.role;
       const cartKey = `cart_${userRole}_${userId}`;
       localStorage.setItem(cartKey, JSON.stringify(cartItems));
+      await dispatch(saveCartToDb({ userId, userRole, cartItems }));
       await logoutUser();
       alert("Logged out successfully");
       if (userRole === "admin") {
