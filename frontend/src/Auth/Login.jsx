@@ -1,6 +1,9 @@
 /* eslint-disable react/jsx-no-undef */
 /* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
+/* eslint-disable react/jsx-no-undef */
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -17,6 +20,25 @@ const Login = () => {
     formState: { errors },
   } = useForm();
 
+  const handleLogin = async (loginData) => {
+    try {
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(loginData),
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem("token", data.token);
+        await loginUser(data.user); // This will trigger re-render
+        navigate("/");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+    }
+  };
+
   const onSubmit = async (data) => {
     try {
       await loginUser(data.email, data.password);
@@ -24,7 +46,7 @@ const Login = () => {
       navigate("/user");
     } catch (error) {
       console.error("Error logging in:", error);
-      alert("Failed to login");
+      alert(error.response?.data?.message || "Failed to login");
     }
   };
 

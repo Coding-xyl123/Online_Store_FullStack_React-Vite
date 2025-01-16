@@ -1,45 +1,110 @@
-/* eslint-disable no-undef */
-/* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
+import React, { useState, useEffect } from "react";
 import { CiSearch } from "react-icons/ci";
 import { RiUserStarLine } from "react-icons/ri";
 import { IoCartOutline } from "react-icons/io5";
-import { Link } from "react-router-dom";
-import { useState } from "react";
-import { useSelector } from "react-redux";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 import getImgUrl from "../utils/getImgUrl";
-import { useDispatch } from "react-redux";
+import {
+  setUserId,
+  setCartItems,
+  saveCartToDb,
+  loadCartFromDb,
+} from "../redux/features/cart/cartSlice";
 import { updateQuantity, removeItem } from "../redux/features/cart/cartSlice";
 import { useAuth } from "../context/AuthContext";
-const Navbar = () => {
+
+const Navbar1 = () => {
   const { currentUser, logoutUser } = useAuth();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
   const cartItems = useSelector((state) => state.cart.cartItems);
 
   const [discount, setDiscount] = useState(0);
   const [discountCode, setDiscountCode] = useState("");
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
+  useEffect(() => {
+    const loadCart = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          // Decode JWT token to get user info
+          const user = JSON.parse(atob(token.split(".")[1]));
+          const userId = user._id;
+          const userRole = user.role;
+          const cartKey = `cart_${userRole}_${userId}`;
+
+          // Try to get cart from localStorage first
+          const savedCartItems = localStorage.getItem(cartKey);
+          if (savedCartItems) {
+            dispatch(setCartItems(JSON.parse(savedCartItems)));
+          } else {
+            // If not in localStorage, load from database
+            await dispatch(loadCartFromDb(userId));
+          }
+
+          // Set user ID in Redux store
+          dispatch(setUserId(userId));
+        } catch (error) {
+          console.error("Error loading cart:", error);
+        }
+      }
+    };
+
+    loadCart();
+  }, [dispatch]);
+  useEffect(() => {
+    if (currentUser && cartItems.length > 0) {
+      const userId = currentUser._id;
+      const userRole = currentUser.role;
+      const cartKey = `cart_${userRole}_${userId}`;
+
+      // Save to localStorage
+      localStorage.setItem(cartKey, JSON.stringify(cartItems));
+
+      // Save to database
+      dispatch(saveCartToDb());
+    }
+  }, [cartItems, currentUser, dispatch]);
+
+  useEffect(() => {
+    if (location.pathname === "/p" || location.pathname === "/user") {
+      if (currentUser) {
+        const userId = currentUser._id;
+        const userRole = currentUser.role;
+        const cartKey = `cart_${userRole}_${userId}`;
+        dispatch(setUserId(userId));
+        const savedCartItems = localStorage.getItem(cartKey);
+        if (savedCartItems) {
+          dispatch(setCartItems(JSON.parse(savedCartItems)));
+        }
+      }
+    }
+  }, [location, currentUser, dispatch]);
+
   const handleLogOut = async () => {
     try {
+      const userId = currentUser._id;
+      const userRole = currentUser.role;
+      const cartKey = `cart_${userRole}_${userId}`;
+      localStorage.setItem(cartKey, JSON.stringify(cartItems));
       await logoutUser();
       alert("Logged out successfully");
+      navigate("/login");
     } catch (error) {
       console.error("Error logging out:", error);
     }
   };
-  const totalItems = cartItems.reduce(
-    (total, item) => total + item.quantity,
-    0
-  ); // Total number of items
-  const totalPrice = cartItems.reduce(
-    (total, item) => total + item.newPrice * item.quantity,
-    0
-  ); // Total price of items
-  //Calculate Total Price
-  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const toggleCart = () => setIsCartOpen(!isCartOpen);
 
-  // Calculate totals
+  const totalItems = cartItems.reduce(
+    (total, item) => total + item.quantity,
+    0
+  );
   const subtotal = cartItems.reduce(
     (total, item) => total + item.newPrice * item.quantity,
     0
@@ -61,7 +126,7 @@ const Navbar = () => {
       <nav className="max-w-screen-2xl mx-auto px-4 py-3 hidden md:flex justify-between items-center">
         <div className="flex items-center gap-2">
           <span className="text-xl font-bold">Management</span>
-          <text className="text-xs size-2">Chuwa</text>
+          <span className="text-xs size-2">Chuwa</span>
         </div>
 
         <div className="relative flex-grow max-w-2xl mx-4">
@@ -73,25 +138,14 @@ const Navbar = () => {
           />
         </div>
 
-        {/* <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2">
-            <RiUserStarLine className="text-2xl" />
-            <div>
-              <Link to="/login">
-                <span className="text-sm">Sign In</span>
-              </Link>
-            </div>
-          </div> */}
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-2">
             <RiUserStarLine className="text-2xl" />
             <div>
               {currentUser ? (
-                <Link to="/login">
-                  <button onClick={handleLogOut} className="text-sm">
-                    Logout
-                  </button>
-                </Link>
+                <button onClick={handleLogOut} className="text-sm">
+                  Logout
+                </button>
               ) : (
                 <Link to="/login">
                   <span className="text-sm">Login</span>
@@ -100,25 +154,27 @@ const Navbar = () => {
             </div>
           </div>
 
-          <div
-            onClick={toggleCart}
-            className="cursor-pointer flex items-center gap-2"
-          >
-            <div className="relative">
-              <IoCartOutline className="text-2xl" />
-              {totalItems > 0 && (
-                <span className="absolute -top-1 -right-3 bg-red-500 text-xs font-semibold w-5 h-5 flex items-center justify-center rounded-full">
-                  {totalItems}
-                </span>
-              )}
+          {currentUser && (
+            <div
+              onClick={toggleCart}
+              className="cursor-pointer flex items-center gap-2"
+            >
+              <div className="relative">
+                <IoCartOutline className="text-2xl" />
+                {totalItems > 0 && (
+                  <span className="absolute -top-1 -right-3 bg-red-500 text-xs font-semibold w-5 h-5 flex items-center justify-center rounded-full">
+                    {totalItems}
+                  </span>
+                )}
+              </div>
+              <span className="text-sm">${subtotal.toFixed(2)}</span>
             </div>
-            <span className="text-sm">${subtotal.toFixed(2)}</span>
-          </div>
+          )}
         </div>
       </nav>
 
       {/* Sidebar / Cart Overlay */}
-      {isCartOpen && (
+      {isCartOpen && currentUser && (
         <>
           <div
             className="fixed inset-0 bg-black bg-opacity-50 z-40"
@@ -137,7 +193,6 @@ const Navbar = () => {
               </button>
             </div>
 
-            {/* Cart Items */}
             {/* Cart Items */}
             <div className="flex-1 overflow-y-auto p-4">
               {cartItems.map((item) => (
@@ -176,7 +231,7 @@ const Navbar = () => {
                         >
                           −
                         </button>
-                        <span className=" px-3 py-1 border border-gray-300 text-gray-700 text-sm font-medium">
+                        <span className="px-3 py-1 border border-gray-300 text-gray-700 text-sm font-medium">
                           {item.quantity}
                         </span>
                         <button
@@ -255,24 +310,32 @@ const Navbar = () => {
       )}
 
       {/* Mobile Navigation */}
-      <nav className="md:hidden bg-[#1B1B1B h-full">
-        <div className="flex justify-between items-center p-4 ">
+      <nav className="md:hidden bg-[#1B1B1B] h-full">
+        <div className="flex justify-between items-center p-4">
           <div className="flex items-center gap-1">
             <span className="text-lg font-bold">M</span>
             <span className="text-xs">Chuwa</span>
           </div>
           <div className="flex items-center gap-6">
-            <Link to="/login">
-              <RiUserStarLine className="text-xl" />
-            </Link>
-            <div onClick={toggleCart} className="relative cursor-pointer">
-              <IoCartOutline className="text-xl" />
-              {totalItems > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
-                  {totalItems}
-                </span>
-              )}
-            </div>
+            {currentUser ? (
+              <button onClick={handleLogOut} className="text-sm">
+                Logout
+              </button>
+            ) : (
+              <Link to="/login">
+                <RiUserStarLine className="text-xl" />
+              </Link>
+            )}
+            {currentUser && (
+              <div onClick={toggleCart} className="relative cursor-pointer">
+                <IoCartOutline className="text-xl" />
+                {totalItems > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
+                    {totalItems}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
         <div className="px-4 pb-4">
@@ -290,4 +353,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default Navbar1;

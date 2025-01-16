@@ -115,8 +115,40 @@ const jwt = require("jsonwebtoken");
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
 
+router.post("/login", async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    console.log("Received login request:", { username, password });
+    const user = await User.findOne({ username });
+    if (!user) {
+      console.log("User not found");
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    console.log("User found:", user);
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      console.log("Password is invalid");
+      return res.status(401).send({ message: "Password is invalid" });
+    }
+
+    const token = jwt.sign(
+      { userId: user._id, username: user.username, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    res.send({ token, cart: user.cart });
+  } catch (error) {
+    console.error("Error during login:", error);
+    res.status(500).send({ message: "Internal server error" });
+  }
+});
+
 // Admin login route
-router.post("/admin", async (req, res) => {
+router.post("/admin/login", async (req, res) => {
   const { username, password } = req.body;
 
   try {

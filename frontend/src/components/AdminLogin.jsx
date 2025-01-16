@@ -1,14 +1,15 @@
+/* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 
 const AdminLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const { loginAdmin } = useAuth(); // Get loginAdmin from context
   const {
     register,
     handleSubmit,
@@ -17,37 +18,16 @@ const AdminLogin = () => {
 
   const onSubmit = async (data) => {
     try {
-      console.log("Submitting login data:", data);
-      const response = await axios.post(
-        "http://localhost:5005/api/auth/admin",
-        {
-          username: data.username,
-          password: data.password,
-        }
-      );
-      const auth = response.data;
-      console.log("Auth response:", auth);
-
-      if (auth.token) {
-        localStorage.setItem("token", auth.token);
+      const result = await loginAdmin(data.username, data.password);
+      if (result.success) {
         alert("Logged in successfully");
         navigate("/p");
-
-        // Set a timeout to remove the token after 1 hour
-        setTimeout(() => {
-          localStorage.removeItem("token");
-          alert("Session expired. Please login again.");
-          navigate("/admin");
-        }, 3600 * 1000);
       } else {
-        alert("Failed to login");
+        alert(result.message || "Failed to login");
       }
     } catch (error) {
-      console.error(
-        "Error logging in:",
-        error.response ? error.response.data : error.message
-      );
-      alert("Error logging in");
+      console.error("Error logging in:", error);
+      alert(error.response?.data?.message || "Error logging in");
     }
   };
 

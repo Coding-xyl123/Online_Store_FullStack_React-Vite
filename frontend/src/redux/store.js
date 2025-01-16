@@ -8,10 +8,12 @@ import productsReducer from "../redux/features/cart/productSlice";
 import { addProduct } from "../redux/features/cart/productSlice";
 import booksApi from "../redux/products/booksApi";
 import authReducer from "../redux/authSlice";
+import userReducer from "./user/userSlice";
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     products: productsReducer,
+    user: userReducer,
     cart: cartReducer,
     [booksApi.reducerPath]: booksApi.reducer,
   },
