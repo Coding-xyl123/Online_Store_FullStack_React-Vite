@@ -27,6 +27,7 @@ const Navbar1 = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const cartItems = useSelector((state) => state.cart.cartItems);
+  const getCartKey = (userId, userRole) => `cart_${userRole}_${userId}`;
 
   const [discount, setDiscount] = useState(0);
   const [discountCode, setDiscountCode] = useState("");
@@ -41,14 +42,21 @@ const Navbar1 = () => {
           const user = JSON.parse(atob(token.split(".")[1]));
           const userId = user._id;
           const userRole = user.role;
-          const cartKey = `cart_${userRole}_${userId}`;
+          const cartKey = getCartKey(userId, userRole);
 
           // Try to get cart from localStorage first
           const savedCartItems = localStorage.getItem(cartKey);
           if (savedCartItems) {
-            dispatch(setCartItems(JSON.parse(savedCartItems)));
+            // Load cart specific to this user and role
+            dispatch(
+              setCartItems({
+                items: JSON.parse(savedCartItems),
+                userId,
+                userRole,
+              })
+            );
           } else {
-            // If not in localStorage, load from database
+            // Load from database with user-specific data
             await dispatch(loadCartFromDb({ userId, userRole }));
           }
 
@@ -66,13 +74,19 @@ const Navbar1 = () => {
     if (currentUser && cartItems.length > 0) {
       const userId = currentUser._id;
       const userRole = currentUser.role;
-      const cartKey = `cart_${userRole}_${userId}`;
+      const cartKey = getCartKey(userId, userRole);
 
-      // Save to localStorage
+      // Save to localStorage with user-specific key
       localStorage.setItem(cartKey, JSON.stringify(cartItems));
 
-      // Save to database
-      dispatch(saveCartToDb({ userId, userRole, cartItems }));
+      // Save to database with user identification
+      dispatch(
+        saveCartToDb({
+          userId,
+          userRole,
+          cartItems,
+        })
+      );
     }
   }, [cartItems, currentUser, dispatch]);
 
